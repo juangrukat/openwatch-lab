@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "openwatch-core"
+version = "0.1.0"
+description = "Local-first watch adapter toolkit"
+requires-python = ">=3.11"
+license = "AGPL-3.0-or-later"
+dependencies = ["bleak>=2.0,<4", "platformdirs>=4,<5"]
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=1", "pytest-cov>=6", "mypy>=1.15", "black>=25", "ruff>=0.11", "pyinstaller>=6.20"]
+[project.scripts]
+openwatch-backend = "openwatch.server:main"
+[tool.setuptools.packages.find]
+where = ["packages/watch-core"]
+[tool.pytest.ini_options]
+testpaths = ["packages/watch-core/tests"]
+asyncio_mode = "auto"
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["packages/watch-core/openwatch"]
+[tool.ruff]
+line-length = 88
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+[tool.black]
+line-length = 88

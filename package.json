@@ -1,0 +1,71 @@
+{
+  "name": "openwatch-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local-first, open watch companion and protocol toolkit",
+  "license": "AGPL-3.0-or-later",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "dev": "npm run build:ui && electron .",
+    "build:ui": "tsc --noEmit && vite build",
+    "check": "npm run build:ui && node --test desktop/*.test.cjs",
+    "backend:bundle": "node scripts/bundle-backend.cjs",
+    "package:mac": "npm run build:ui && electron-builder --mac dir",
+    "package:win": "npm run build:ui && electron-builder --win nsis"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^44.9.0",
+    "electron-builder": "^26.0.0",
+    "prettier": "^3.9.10",
+    "typescript": "^5.7.0",
+    "vite": "^8.3.4"
+  },
+  "build": {
+    "appId": "org.openwatchlab.desktop",
+    "productName": "OpenWatch Lab",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "desktop/*.cjs",
+      "dist/**/*",
+      "package.json",
+      "!desktop/*.test.cjs",
+      "LICENSE",
+      "NOTICE.md"
+    ],
+    "extraResources": [
+      {
+        "from": "build/backend",
+        "to": "backend"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.healthcare-fitness",
+      "extendInfo": {
+        "NSBluetoothAlwaysUsageDescription": "OpenWatch Lab connects directly to the watch you select. Your data stays on this computer.",
+        "NSBluetoothPeripheralUsageDescription": "Connect to your selected watch over Bluetooth."
+      },
+      "identity": null
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "author": "OpenWatch Lab contributors",
+  "overrides": {
+    "@electron/get": "^5.1.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "license": "CC0-1.0",
+  "synthetic": true,
+  "frames": [
+    {
+      "hex": "feea20062601",
+      "note": "Deliberately short goal reply; decoder must reject it"
+    },
+    {
+      "hex": "feea20066bff",
+      "note": "Oxygen completion marker is not a percentage"
+    }
+  ]
+}

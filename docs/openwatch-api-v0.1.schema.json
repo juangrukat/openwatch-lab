@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openwatch:command:0.1",
+  "title": "OpenWatch Lab local command envelope, draft 0.1",
+  "description": "CC0-1.0. Transport is newline-delimited JSON on inherited stdio. Platform-specific BLE remains behind adapters. Args are validated by each command handler.",
+  "type": "object",
+  "required": ["id", "command"],
+  "properties": {
+    "id": { "type": ["string", "integer"] },
+    "command": {
+      "enum": [
+        "state",
+        "scan",
+        "connect",
+        "disconnect",
+        "refresh",
+        "sync",
+        "history",
+        "packets",
+        "set_setting",
+        "set_alarm",
+        "measure",
+        "notify",
+        "find",
+        "export",
+        "demo"
+      ]
+    },
+    "args": { "type": "object" }
+  },
+  "additionalProperties": false
+}
