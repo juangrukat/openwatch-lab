@@ -7,7 +7,7 @@ Original documentation: CC0-1.0. These findings extend the protocol notes; they 
 | Question | Finding | Confidence / remaining work |
 |---|---|---|
 | Contacts | Watch advertises 8 slots, name field limit60 bytes, avatar width/height0, protocol version1. A dummy contact was added, count changed0→1, then removed, count restored0. | Capacity query and count changes verified. User reported no contact appeared; visible usable contact creation is NOT established. A complete contact-list readback was not located. |
-| Custom backgrounds | Existing built-in face selection works. Custom image transfer is present in the shipped SDK and declared for O20. Query39 reports original240×284 pixels and preview140×163. | No custom image uploaded. Trace encoding, chunk acknowledgements, CRC and cancellation before implementing. |
+| Custom backgrounds | Existing built-in face selection works. Custom image transfer is present in the shipped SDK and declared for O20. Query39 reports original240×284 pixels and preview140×163. | Subsequent test succeeded: raw RGB565 image+preview uploaded with matched whole-file CRC; user confirmed correct rendering. See O20-CUSTOM-BACKGROUNDS.md. |
 | Memory | Query5A08 reports a512000-byte (500KiB) UDT/object transfer maximum. | **Not total RAM, total flash or free storage.** Those remain unknown. |
 | Movement reminders | Schedule query83 returns four fields: period, step threshold, start hour, end hour. Period changed60→61 and restored60; all fields read back correctly. | Stored schedule write verified; physical reminder timing was not tested. |
 | Water reminders | Legacy query8701 returns settings; newer BB040601 does not answer in this window. | Disabled schedule changed, read back, then fully restored; physical alerts untested. |
@@ -47,7 +47,7 @@ The guarded experiment checked the exact expected profile and count0 before writ
 - B4 payload26/00,26/01,26/02,26/04,26/05 timed out. JL707 face-memory parsing cannot be applied to the older O20 simply because that path exists in the SDK.
 - Query84 returned an empty payload; this is not proof that custom faces are unsupported.
 
-The older SDK `CRPScreen` path initiates an image transfer through command6E with a four-byte length, handles indexed chunks (candidate256-byte data slices), retries and a CRC seededFEEA. Some packet headers differ by API version. The original image packing, preview ordering, transfer characteristic, terminal response and abort semantics still need reconstruction. No firmware operation was attempted.
+The older SDK `CRPScreen` path initiates an image transfer through command6E with a four-byte length, handles indexed chunks (candidate256-byte data slices), retries and a CRC seededFEEA. Some packet headers differ by API version. The original image packing, preview ordering, transfer characteristic, terminal response and abort semantics still need reconstruction. No firmware operation was attempted. Subsequent custom-background transfer and user rendering confirmation are documented in [O20 custom backgrounds](O20-CUSTOM-BACKGROUNDS.md).
 
 ## Music remote candidate
 

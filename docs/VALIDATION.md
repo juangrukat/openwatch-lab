@@ -10,3 +10,5 @@
 - Windows build workflow is supplied but has not run here. Windows BLE, clean-host connection, x64 Mac, signed distribution and notarization remain untested.
 
 No raw personal packet capture is a public fixture. No cloud or vendor registration is involved in the implemented BLE operations.
+
+Additional diagnostic validation: custom background181960bytes transferred in18 negotiated10KiB logical chunks, terminalCRC74FF matched, commit sent, and user confirmed correct rendering. First attempt ignoring BA01 negotiation was cancelled and the previous face restored. This is an independent diagnostic operation; the release UI has not gained an upload button. Memory-capacity queries remain unresolved beyond the512000-byte object-transfer limit.

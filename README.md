@@ -50,3 +50,5 @@ See [adapter guide](docs/ADAPTERS.md) and [protocol notes](docs/PROTOCOL.md). Pe
 App and adapter code: **AGPL-3.0-or-later**, see LICENSE. Original protocol documentation and synthetic fixtures: **CC0-1.0**, see docs/CC0-1.0.txt. Dependencies retain their licenses. The common API is a versioned proposal, not a certified interoperability standard. Anyone can implement the documented protocol independently or contribute an adapter without vendor registration.
 
 Further protocol research: [contacts, custom faces, reminders, music and storage](docs/FEATURE-INVESTIGATION.md). These investigation results are separate from the controls shipped in version0.1.0.
+
+Custom-background research succeeded on the O20: [validated image format and transfer protocol](docs/O20-CUSTOM-BACKGROUNDS.md). A background-upload UI is not included in app0.1.0.

@@ -31,3 +31,5 @@ Activity contains three uint24LE fields: steps, distance raw, calories raw. Step
 B2 list has subtype byte and six 5-byte entries. Detail payload is 30 bytes: subtype/slot, start at offset 2, end at 6, candidate active seconds uint16 at 10, sport code at 13, steps uint32 at 14, distance uint32 at 18, calories uint16 at 22. Other bytes remain unknown. HR pages carry subtype/slot/page and sample bytes; FFFF is terminal and zero samples are missing, not zero BPM. Current app retrieves the first page only.
 
 Repository tests use fabricated records. Personal observations, original binary artifacts and raw traffic are intentionally outside the public source tree under ignored `research/`.
+
+A later independently validated [custom-background transfer](O20-CUSTOM-BACKGROUNDS.md) uses command6E, BA01 logical-chunk negotiation and the FEE6 raw-data channel. The protocol is documented with a synthetic fixture and user rendering confirmation.

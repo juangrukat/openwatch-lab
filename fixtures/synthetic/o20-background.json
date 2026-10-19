@@ -1,0 +1,18 @@
+{
+  "license": "CC0-1.0",
+  "synthetic": true,
+  "image": "o20-background.png",
+  "encoding": "RGB565 big-endian, row-major original then preview",
+  "original": { "width": 240, "height": 284 },
+  "preview": { "width": 140, "height": 163, "resampling": "nearest-neighbor" },
+  "encoded_bytes": 181960,
+  "encoded_sha256": "919bc81e1c2bae988dfbf270cc9968dc9ef0c5ba583dc314d8d6b69cc181dbb9",
+  "crc16": {
+    "polynomial": "1021",
+    "seed": "FEEA",
+    "xorout": "0000",
+    "reflected": false,
+    "value": "74FF"
+  },
+  "validation": "All 18 negotiated 10240-byte logical chunks acknowledged; terminal ffff74ff; committed; user confirmed correct rendering. Tested O20 software O20-7LH2-2.1.12."
+}
