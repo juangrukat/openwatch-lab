@@ -4,9 +4,17 @@
   "title": "OpenWatch Lab local command envelope, draft 0.1",
   "description": "CC0-1.0. Transport is newline-delimited JSON on inherited stdio. Platform-specific BLE remains behind adapters. Args are validated by each command handler.",
   "type": "object",
-  "required": ["id", "command"],
+  "required": [
+    "id",
+    "command"
+  ],
   "properties": {
-    "id": { "type": ["string", "integer"] },
+    "id": {
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
     "command": {
       "enum": [
         "state",
@@ -23,10 +31,15 @@
         "notify",
         "find",
         "export",
-        "demo"
+        "demo",
+        "background_stage",
+        "background_start",
+        "background_cancel"
       ]
     },
-    "args": { "type": "object" }
+    "args": {
+      "type": "object"
+    }
   },
   "additionalProperties": false
 }

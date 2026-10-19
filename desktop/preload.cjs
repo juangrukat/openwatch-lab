@@ -16,6 +16,9 @@ const allowed = new Set([
   "measure",
   "notify",
   "find",
+  "background_stage",
+  "background_start",
+  "background_cancel",
 ]);
 contextBridge.exposeInMainWorld("watch", {
   command(name, args = {}) {

@@ -12,3 +12,9 @@
 No raw personal packet capture is a public fixture. No cloud or vendor registration is involved in the implemented BLE operations.
 
 Additional diagnostic validation: custom background181960bytes transferred in18 negotiated10KiB logical chunks, terminalCRC74FF matched, commit sent, and user confirmed correct rendering. First attempt ignoring BA01 negotiation was cancelled and the previous face restored. This is an independent diagnostic operation; the release UI has not gained an upload button. Memory-capacity queries remain unresolved beyond the512000-byte object-transfer limit.
+
+## Version 0.2.0 background uploader
+
+26 Python tests and4 Node tests pass; backend statement coverage96%. Strict mypy, Ruff, Black and TypeScript checks pass. Tests cover10KiB negotiation, complete image/CRC commit, CRC rejection, malformed and missing negotiation, invalid indices, cancellation, disconnect, bounded staging and shutdown. Renderer tests cover RGB order, alpha compositing and center cropping. Windows hardware validation remains outstanding.
+
+Packaged Mac app0.2.0: synthetic sample selected and previewed; a transfer was cancelled successfully from the UI. A subsequent complete UI upload reported a matching checksum and commit. The native file picker opens; automated Go-to-Folder navigation did not complete in the test tool, so arbitrary personal-file selection is not claimed as an automated end-to-end check. Sample loading uses the same bitmap/crop/encoder path.

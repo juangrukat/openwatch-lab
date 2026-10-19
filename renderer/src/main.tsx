@@ -1,3 +1,4 @@
+import { BackgroundUploader } from "./BackgroundUploader";
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -155,8 +156,15 @@ function App() {
     if (list) setDevices(list);
   };
   const connected = state.connected || state.demo;
+  const uploading =
+    state.background?.status === "uploading" ||
+    state.background?.status === "verifying";
   const writable =
-    state.connected && !state.demo && !!state.profile_verified && !busy;
+    state.connected &&
+    !state.demo &&
+    !!state.profile_verified &&
+    !busy &&
+    !uploading;
   const refresh = () =>
     run<State>("Reading watch", "refresh", {}, "Watch values refreshed.");
   const sync = async () => {
@@ -200,7 +208,7 @@ function App() {
             <Watch size={25} />
           </div>
           <div>
-            openwatch<span>LAB / 0.1</span>
+            openwatch<span>LAB / 0.2</span>
           </div>
         </div>
         <div className="nav-label">YOUR WORKSPACE</div>
@@ -250,7 +258,7 @@ function App() {
               className="icon-button"
               title="Refresh watch values"
               aria-label="Refresh watch values"
-              disabled={!state.connected || !!busy}
+              disabled={!state.connected || !!busy || uploading}
               onClick={refresh}
             >
               <RefreshCw size={16} />
@@ -258,6 +266,12 @@ function App() {
           </div>
         </header>
         <div className="content">
+          {uploading && (
+            <div className="demo-banner">
+              <span>Uploading background · {state.background?.message}</span>
+              <button onClick={() => setTab("controls")}>View progress</button>
+            </div>
+          )}
           {state.demo && (
             <div className="demo-banner">
               <FlaskConical size={16} />
@@ -316,7 +330,7 @@ function App() {
                 </div>
                 <button
                   className="button primary"
-                  disabled={!!busy || !backend}
+                  disabled={!!busy || uploading || !backend}
                   onClick={scan}
                 >
                   <Bluetooth size={17} />
@@ -375,7 +389,7 @@ function App() {
                       </span>
                       <button
                         className="text-button"
-                        disabled={!!busy}
+                        disabled={!!busy || uploading}
                         onClick={() => run("Disconnecting", "disconnect")}
                       >
                         Disconnect <Unplug size={14} />
@@ -390,7 +404,7 @@ function App() {
                         <button
                           className="text-button"
                           onClick={demo}
-                          disabled={!!busy || !backend}
+                          disabled={!!busy || uploading || !backend}
                         >
                           Explore a preview <ArrowRight size={14} />
                         </button>
@@ -490,7 +504,7 @@ function App() {
                   </p>
                   <button
                     className="button secondary"
-                    disabled={!state.connected || !!busy}
+                    disabled={!state.connected || !!busy || uploading}
                     onClick={sync}
                   >
                     Sync stored records <ArrowDownToLine size={16} />
@@ -545,7 +559,7 @@ function App() {
                 <div className="toolbar-actions">
                   <button
                     className="button secondary"
-                    disabled={!!busy}
+                    disabled={!!busy || uploading}
                     onClick={() =>
                       run(
                         "Exporting records",
@@ -560,7 +574,7 @@ function App() {
                   </button>
                   <button
                     className="button primary"
-                    disabled={!state.connected || !!busy}
+                    disabled={!state.connected || !!busy || uploading}
                     onClick={sync}
                   >
                     <RefreshCw size={15} />
@@ -752,7 +766,12 @@ function App() {
                   </div>
                   <button
                     className="button stop"
-                    disabled={!state.connected || !!busy || !state.measurement}
+                    disabled={
+                      !state.connected ||
+                      !!busy ||
+                      uploading ||
+                      !state.measurement
+                    }
                     onClick={() =>
                       run("Stopping measurement", "measure", { kind: null })
                     }
@@ -808,6 +827,12 @@ function App() {
                   />
                 </section>
               </div>
+              <BackgroundUploader
+                writable={writable}
+                status={state.background}
+                busy={!!busy}
+                onBusy={setBusy}
+              />
               <section className="panel alarm-panel">
                 <div className="section-heading">
                   <Bell size={19} />
@@ -1066,7 +1091,7 @@ function App() {
                 <button
                   className="device-result"
                   key={device.id}
-                  disabled={!!busy}
+                  disabled={!!busy || uploading}
                   onClick={async () => {
                     const value = await run<State>(
                       "Connecting and reading watch",
@@ -1114,13 +1139,17 @@ function App() {
             <div className="modal-bottom">
               <button
                 className="button secondary"
-                disabled={!!busy}
+                disabled={!!busy || uploading}
                 onClick={scan}
               >
                 <RefreshCw size={15} />
                 Scan again
               </button>
-              <button className="text-button" disabled={!!busy} onClick={demo}>
+              <button
+                className="text-button"
+                disabled={!!busy || uploading}
+                onClick={demo}
+              >
                 Use synthetic preview <ArrowRight size={14} />
               </button>
             </div>

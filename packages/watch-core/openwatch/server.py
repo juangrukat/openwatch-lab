@@ -20,7 +20,7 @@ def output(message: dict[str, Any]) -> None:
 async def run(path: Path) -> None:
     """Process bounded commands serially and clean up on pipe closure."""
     service = Service(path, lambda event, data: output({"event": event, "data": data}))
-    output({"event": "ready", "data": {"version": "0.1.0"}})
+    output({"event": "ready", "data": {"version": "0.2.0"}})
     try:
         while True:
             line = await asyncio.to_thread(sys.stdin.readline, 65537)

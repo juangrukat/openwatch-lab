@@ -1,6 +1,8 @@
 """Validated desktop commands, explicit device selection and local history."""
 
 import asyncio
+import base64
+import binascii
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
@@ -11,6 +13,7 @@ from bleak.backends.device import BLEDevice
 
 from . import protocol as p
 from .adapters.moyoung import MoyoungAdapter
+from .background import IMAGE_BYTES, upload
 from .capabilities import CAPABILITIES, match_adapter
 from .errors import WatchError
 from .store import Store
@@ -58,6 +61,9 @@ class Service:
         self.device_id: str | None = None
         self.lifecycle = asyncio.Lock()
         self.closed = False
+        self.background_task: asyncio.Task[None] | None = None
+        self.background_bytes = bytearray()
+        self.background_part = 0
 
     def snapshot(self) -> dict[str, Any]:
         """Return state through serialization, not shared mutable objects."""
@@ -89,6 +95,9 @@ class Service:
         elif kind == "activity":
             self.state["activity"] = data
             self.publish()
+        elif kind == "background":
+            self.state["background"] = data
+            self.publish()
         elif kind == "measurement":
             self.state["measurement"] = data.get("kind")
             self.publish()
@@ -118,6 +127,8 @@ class Service:
 
     async def disconnect(self) -> None:
         """Close the current session and clear ephemeral connection state."""
+        await self.cancel_background()
+        self.background_bytes.clear()
         adapter, transport = self.adapter, self.transport
         self.adapter = None
         self.transport = None
@@ -299,10 +310,100 @@ class Service:
             ]
         return self.store.history(self.device_id)
 
+    def background_active(self) -> bool:
+        """Keep other watch operations out of the transfer channel."""
+        return self.background_task is not None and not self.background_task.done()
+
+    async def cancel_background(self) -> None:
+        """Cancel cooperatively and wait for the protocol abort/cleanup."""
+        if self.background_active():
+            assert self.background_task is not None
+            self.background_task.cancel()
+            try:
+                await self.background_task
+            except asyncio.CancelledError:
+                self.event(
+                    "background",
+                    {"status": "cancelled", "message": "Background upload cancelled."},
+                )
+        self.background_bytes.clear()
+        self.background_part = 0
+
+    async def run_background(self, adapter: MoyoungAdapter, image: bytes) -> None:
+        """Publish terminal status without leaking task exceptions."""
+        try:
+            await upload(adapter, image)
+        except asyncio.CancelledError:
+            self.event(
+                "background",
+                {"status": "cancelled", "message": "Background upload cancelled."},
+            )
+        except Exception as exc:
+            self.event(
+                "background",
+                {
+                    "status": "error",
+                    "message": str(exc) or "Background upload timed out.",
+                },
+            )
+
     async def command(self, name: str, args: dict[str, Any]) -> Any:
         """Dispatch a narrow, explicit RPC surface; no raw write or filesystem paths."""
         if self.closed:
             raise WatchError("Backend is shutting down")
+        if self.background_active() and name not in (
+            "state",
+            "history",
+            "packets",
+            "export",
+            "background_cancel",
+            "disconnect",
+        ):
+            raise WatchError("Finish or cancel the background upload first")
+        if name == "background_cancel":
+            await self.cancel_background()
+            return {"cancelled": True}
+        if name == "background_stage":
+            self.require_adapter(True)
+            part = integer(args, "part")
+            raw = args.get("data")
+            if not isinstance(raw, str) or len(raw) > 5500:
+                raise ValueError("Invalid background piece")
+            try:
+                decoded = base64.b64decode(raw, validate=True)
+            except (ValueError, binascii.Error) as exc:
+                raise ValueError("Invalid background encoding") from exc
+            if not decoded or len(decoded) > 4096:
+                raise ValueError("Invalid background piece size")
+            if part == 0:
+                self.background_bytes.clear()
+                self.background_part = 0
+            if (
+                part != self.background_part
+                or len(self.background_bytes) + len(decoded) > IMAGE_BYTES
+            ):
+                raise ValueError("Background pieces are out of order or too large")
+            self.background_bytes.extend(decoded)
+            self.background_part += 1
+            return {"received": len(self.background_bytes)}
+        if name == "background_start":
+            adapter = self.require_adapter(True)
+            if len(self.background_bytes) != IMAGE_BYTES:
+                raise ValueError("Incomplete background image")
+            image = bytes(self.background_bytes)
+            self.background_bytes.clear()
+            self.background_part = 0
+            self.state["background"] = {
+                "status": "uploading",
+                "transferred": 0,
+                "total": IMAGE_BYTES,
+                "message": "Preparing watch…",
+            }
+            self.publish()
+            self.background_task = asyncio.create_task(
+                self.run_background(adapter, image)
+            )
+            return {"started": True}
         if name == "state":
             return self.snapshot()
         if name == "scan":

@@ -38,6 +38,7 @@ class MoyoungAdapter:
         self.measurement: str | None = None
         self.closed = False
         self.info: dict[str, str] = {}
+        self.image_receiver: Callable[[int, bytes], None] | None = None
 
     async def initialize(self) -> dict[str, str]:
         """Validate the manufacturer before enabling vendor operations."""
@@ -64,6 +65,8 @@ class MoyoungAdapter:
     def disconnected(self) -> None:
         """Fail outstanding work immediately when a device disappears."""
         self.closed = True
+        if self.image_receiver:
+            self.image_receiver(-1, b"")
         self.measurement = None
         self.decoder.clear()
         if self.pending and not self.pending[2].done():
@@ -92,6 +95,8 @@ class MoyoungAdapter:
         """Feed notifications to the pending request and independent events."""
         self.event("packet", {"direction": "rx", "hex": data.hex()})
         for frame in self.decoder.feed(data):
+            if self.image_receiver:
+                self.image_receiver(frame.command, frame.payload)
             if self.pending:
                 command, matcher, future = self.pending
                 if (

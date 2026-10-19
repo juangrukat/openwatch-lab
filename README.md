@@ -1,36 +1,85 @@
-# OpenWatch Lab
+# OpenWatch Lab — itel Fit O20 / ISW-O20 companion
 
-An account-free, local-first desktop companion and open adapter toolkit. The first adapter targets the **itel ISW-O20**, MOYOUNG-V2, software **O20-7LH2-2.1.12**. This is an early working implementation, not universal watch support.
+**An open-source, account-free iPulse alternative for the itel Fit O20 smartwatch.** Connect directly over Bluetooth, keep your records locally, change settings and upload custom watch backgrounds without a vendor account.
+
+[![Checks](https://github.com/juangrukat/openwatch-lab/actions/workflows/check.yml/badge.svg)](https://github.com/juangrukat/openwatch-lab/actions/workflows/check.yml) [![License: AGPL-3.0-or-later](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue)](LICENSE)
+
+[Download the Mac app](https://github.com/juangrukat/openwatch-lab/releases/latest) · [Protocol documentation](docs/PROTOCOL.md) · [Add a watch adapter](docs/ADAPTERS.md) · [Contribute](CONTRIBUTING.md)
+
+![OpenWatch Lab overview with explicitly synthetic preview data](docs/images/overview.png)
+
+*Overview shown in synthetic preview mode. These sample health values are fabricated; no personal health records are published.*
+
+## Supported watch and platforms
+
+The first adapter targets **itel Fit O20**, advertised as **itel ISW-O20**, manufacturer **MOYOUNG-V2**, software **O20-7LH2-2.1.12**. Other watches are not automatically compatible because they use iPulse, Da Fit or a similar Bluetooth service.
+
+| Platform | Status |
+|---|---|
+| macOS, Apple Silicon | Packaged app and real O20 connection tested |
+| Windows | Source/build configuration and CI supplied; BLE hardware and installer unverified |
+| Android / iPhone | Future work; no mobile app in this release |
+| Other watch models | Adapter contributions welcome; unknown devices are inspection-only |
+
+Writes are disabled on software versions outside the validated O20 profile. Account-free operations worked after a watch reset on the same Mac; a completely fresh host with no prior Bluetooth state has not been tested.
+
+## What works in version 0.2.0
+
+- Scan, explicitly select, connect and disconnect your watch without iPulse login.
+- Read battery, device versions, current steps and live heart rate.
+- Change step goal, English language, time-format/units values, raise-to-wake and movement-reminder switch, with read-back verification.
+- Create, edit and clear three weekly alarm slots while preserving the other slots.
+- Start and stop heart-rate and oxygen measurements.
+- Retrieve saved oxygen, stress and workout records, with source timestamps and local JSON export.
+- Send a local test notification and an audible find-watch signal.
+- Select tested built-in watch faces and upload **custom photo backgrounds**.
+- Inspect capabilities, GATT services and a bounded local packet log.
+
+Some raw setting labels and distance/calorie units remain provisional. A matching settings read-back establishes storage, not every physical effect. **Fresh numeric oxygen results are not verified**; saved records are never relabeled as a new measurement. Sleep, complete workout HR pagination, contacts UI, music files, calling audio, weather and firmware replacement are not implemented. See [feature investigation](docs/FEATURE-INVESTIGATION.md) and [validation](docs/VALIDATION.md).
+
+## Custom watch backgrounds
+
+In **Watch controls → Custom background**, choose a PNG, JPEG or WebP image, inspect the centered crop, then select **Upload background**. The app creates the O20's 240 × 284 image and 140 × 163 preview locally. Progress, cancellation, negotiated transfer sizes and whole-file checksum verification are included. A built-in sample lets you test without choosing a personal photo.
+
+![Custom background uploader after a successful checksum-verified sample transfer](docs/images/background-uploader.png)
+
+*A generated test pattern is shown; no personal photo is included. Upload replaces the custom background. It does not install firmware or additional watch apps.*
+
+The [validated custom-background protocol](docs/O20-CUSTOM-BACKGROUNDS.md) and [synthetic fixture](fixtures/synthetic/o20-background.json) are documented so others can build independent implementations. The observed 500 KiB object-transfer ceiling is **not** the watch's total RAM, total flash or free storage.
+
+## Download and connect
+
+1. Download the **macOS Apple Silicon** ZIP from [Releases](https://github.com/juangrukat/openwatch-lab/releases/latest), extract it and open **OpenWatch Lab.app**. The early Mac build is unsigned and not notarized; source builds are also available below.
+2. Enable Bluetooth. Keep iPulse and other watch companions closed during connection.
+3. Choose **Connect a watch**, allow the OS Bluetooth permission if requested, then select **itel ISW-O20**.
+4. Open **Watch controls** for alarms/settings/backgrounds or **Health history** to sync stored records.
+
+BLE watches need not appear in macOS Bluetooth Settings. This app discovers the device through Bluetooth Low Energy GATT. It does not automatically connect to every device found in a scan.
+
+**Synthetic preview** is opt-in, clearly labeled and read-only. It writes neither watch settings nor fabricated records into your real database.
 
 ## Run from source
 
-Requirements: Node.js 22.12+ and Python 3.11+. Enable Bluetooth and keep iPulse closed so it does not compete for the connection.
+Requirements: Node.js **22.12+**, Python **3.11+**, and a working Bluetooth Low Energy adapter.
 
 ```sh
+git clone https://github.com/juangrukat/openwatch-lab.git
+cd openwatch-lab
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
 npm ci
 npm run dev
 ```
 
-On Windows, use `python -m venv .venv` and `.venv\Scripts\python -m pip install -e ".[dev]"`. Then use the same npm commands. Windows requires an actual BLE adapter; its runtime and installer still require hardware validation.
+On Windows, use `python -m venv .venv` and `.venv\Scripts\python -m pip install -e ".[dev]"`, then the same npm commands. Windows remains a build target pending hardware validation.
 
-Choose **Connect watch**, scan, and explicitly select your watch. No account, cloud service, vendor token, or automatic pairing workflow is used. Allow the OS Bluetooth permission when prompted. The watch may not appear in macOS Bluetooth Settings because this app connects through BLE GATT.
+## Privacy and local storage
 
-**Preview** is explicitly synthetic and read-only. It never inserts samples into your watch history. Real history is stored locally in SQLite; the app displays its database path. Export creates a JSON file only where you choose. Packet inspection is held in memory and limited to 200 entries.
+No account, telemetry, vendor SDK or cloud service is required by the implemented operations. Electron talks to a Python/Bleak sidecar over inherited standard input/output; there is no local HTTP listener. SQLite stores observations and device associations in your OS application-data directory. The exact path appears under **About the project**. Export writes JSON only to a location you choose.
 
-## Implemented
+Images stay local and are staged transiently for upload. Packet inspection is limited to 200 in-memory entries and is excluded from observation exports. Personal research captures, stable device identifiers, databases and vendor binaries are not distributed in this repository.
 
-- Explicit scan/connect/disconnect; service and characteristic inspection.
-- Battery, activity counters, device versions, settings and three legacy alarms.
-- Read-back verified settings and alarm changes, preserving other alarm slots.
-- Heart-rate and oxygen measurement start/stop; live heart rate.
-- Saved oxygen, saved stress, workout details and workout heart-rate data.
-- Local test messages, audible find-watch command, local history and JSON export.
-
-Fresh oxygen numbers are **not yet verified**: initiating a measurement works, but saved samples are never presented as its fresh result. Sleep, full workout HR pagination, all sport IDs, all notification categories, phone integration, calling audio, weather and firmware updates are not implemented. Distance/calorie units and several raw setting enum meanings remain candidates. The UI retains raw values where interpretation is uncertain. Writes are disabled on unvalidated software versions. A factory-reset watch was accessed without login on the same Mac; a host with no prior OS cache/bond remains untested.
-
-## Develop and package
+## Build and verify
 
 ```sh
 .venv/bin/python -m pytest --cov=openwatch
@@ -41,14 +90,14 @@ npm run backend:bundle
 npm run package:mac
 ```
 
-For Windows, run `npm run backend:bundle` and `npm run package:win` **on Windows**. Each OS needs its own backend build. macOS output is unsigned; distribution signing/notarization is not configured. No releases are uploaded automatically.
+For Windows, run `npm run backend:bundle` and `npm run package:win` **on Windows**. Each OS needs a native backend build. Local validation: **26 Python tests + 4 Node tests**, 96% backend statement coverage, strict typing/lint and production UI build. CI results are visible in [Actions](https://github.com/juangrukat/openwatch-lab/actions); they do not establish Bluetooth hardware support.
 
-See [adapter guide](docs/ADAPTERS.md) and [protocol notes](docs/PROTOCOL.md). Personal research captures and vendor binaries are excluded from the distributable source. Do not submit health records, stable hardware identifiers or account tokens in issues or fixtures.
+## An open foundation for other watches
 
-## License and openness
+The interface, Bluetooth transport, pure protocol codecs, storage and device adapters are separate. Start with the [adapter template](adapter-template/README.md), [read-only example](adapter-template/adapter.py) and [contribution guide](CONTRIBUTING.md). Use fabricated fixtures and record which features were physically confirmed on each model and firmware.
 
-App and adapter code: **AGPL-3.0-or-later**, see LICENSE. Original protocol documentation and synthetic fixtures: **CC0-1.0**, see docs/CC0-1.0.txt. Dependencies retain their licenses. The common API is a versioned proposal, not a certified interoperability standard. Anyone can implement the documented protocol independently or contribute an adapter without vendor registration.
+The common API is a versioned interoperability proposal, not a certified universal smartwatch standard. Unknown models do not receive vendor writes automatically. This project is independent of itel, iPulse and Moyoung.
 
-Further protocol research: [contacts, custom faces, reminders, music and storage](docs/FEATURE-INVESTIGATION.md). These investigation results are separate from the controls shipped in version0.1.0.
+## License and acknowledgments
 
-Custom-background research succeeded on the O20: [validated image format and transfer protocol](docs/O20-CUSTOM-BACKGROUNDS.md). A background-upload UI is not included in app0.1.0.
+Application and adapter code: **AGPL-3.0-or-later** ([LICENSE](LICENSE)). Original protocol/interface documentation and synthetic fixtures: **CC0-1.0** ([dedication](docs/CC0-1.0.txt)). Dependencies retain their own licenses. See [NOTICE.md](NOTICE.md) for Gadgetbridge reference attribution and runtime notices.

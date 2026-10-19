@@ -4,6 +4,13 @@ from typing import Any
 
 CAPABILITIES: list[dict[str, Any]] = [
     {
+        "id": "background",
+        "name": "Custom background upload",
+        "status": "verified",
+        "write": True,
+        "note": "240×284 image with preview; checksum verified.",
+    },
+    {
         "id": "battery",
         "name": "Battery & device information",
         "status": "verified",

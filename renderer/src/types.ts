@@ -20,7 +20,14 @@ export interface Capability {
   write: boolean;
   note?: string;
 }
+export interface BackgroundStatus {
+  status: "uploading" | "verifying" | "success" | "error" | "cancelled";
+  message: string;
+  transferred?: number;
+  total?: number;
+}
 export interface State {
+  background?: BackgroundStatus;
   connected: boolean;
   demo: boolean;
   device?: Device | null;

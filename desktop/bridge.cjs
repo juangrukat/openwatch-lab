@@ -95,6 +95,9 @@ const COMMANDS = new Set([
   "measure",
   "notify",
   "find",
+  "background_stage",
+  "background_start",
+  "background_cancel",
 ]);
 function validate(command, args) {
   if (!COMMANDS.has(command)) throw new Error("Unsupported app command");
